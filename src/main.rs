@@ -1,4 +1,3 @@
-extern crate yaml_rust;
 use regex::Regex;
 use std::collections::HashMap;
 use std::fs::File;
@@ -27,6 +26,21 @@ fn main() -> anyhow::Result<()> {
     let yml_docs = YamlLoader::load_from_str(&av_str)?;
     let av_file = yml_docs.get(0).unwrap();
     let ps_script = av_file["build_script"][0]["ps"].as_str().unwrap();
+    let mut variable_map = HashMap::new();
+    for (key, value) in av_file["environment"].as_hash().unwrap() {
+        let av_key = match key.as_str() {
+            Some(k) => k,
+            None => continue,
+        };
+        let av_value = match value {
+            yaml_rust::Yaml::Integer(i) => i.to_string(),
+            yaml_rust::Yaml::String(s) => s.clone(),
+            yaml_rust::Yaml::Boolean(b) => b.to_string(),
+            _ => continue,
+        };
+        let av_key = "$AV_".to_owned() + av_key;
+        variable_map.insert(av_key, av_value);
+    }
 
     let set_env_iter: Vec<&str> = get_captures(&set_env_re, ps_script)
         .map(|e| e.trim_end_matches('='))
@@ -35,7 +49,6 @@ fn main() -> anyhow::Result<()> {
         .filter(|env| !set_env_iter.contains(env))
         .collect();
 
-    let mut variable_map = HashMap::new();
     for variable in envs_to_request {
         let new_key = variable.replace("$env:", "$AV_");
         // prevent dupes
