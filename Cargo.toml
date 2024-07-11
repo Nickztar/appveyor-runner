@@ -1,0 +1,11 @@
+[package]
+name = "appveyor-runner"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+yaml-rust = "0.4"
+powershell_script = "1.1.0"
+inquire = "0.7.5"
+anyhow = "1"
+regex = "1.10.5"

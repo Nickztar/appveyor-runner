@@ -1,0 +1,21 @@
+version: 1.0.0.{build}-{branch}
+skip_tags: true
+image: Ubuntu
+services:
+    - docker
+environment:
+    # Disable the .NET logo in the console output.
+    DOTNET_NOLOGO: true
+    # Disable the .NET first time experience to skip caching NuGet packages and speed up the build.
+    DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+install:
+    - ps: dotnet tool install --global Octopus.DotNet.Cli
+build_script:
+    - ps: >-
+          $env:ES_BRANCH_NAME=$($env:APPVEYOR_REPO_BRANCH) -replace "_","" -replace "-",""
+
+          $env:ES_BUILD_VERSION=$($env:APPVEYOR_BUILD_VERSION) -replace "_",""
+
+          write-output 'ES_BRANCH_NAME: ' $env:ES_BRANCH_NAME
+
+          write-output 'APPVEYOR_BUILD_VERSION: ' $env:ES_BUILD_VERSION
